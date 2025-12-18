@@ -28,13 +28,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
-import com.google.zxing.PlanarYUVLuminanceSource
-import com.google.zxing.common.HybridBinarizer
-import java.nio.ByteBuffer
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -173,7 +171,7 @@ class ScannerView : FrameLayout {
             )
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
-        val analyzer = ZXingBarcodeAnalyzer(object : ResultHandler {
+        val analyzer = MLKitBarcodeAnalyzer(object : ResultHandler {
             override fun handleResult(rawResult: Result) {
                 post {
                     resultHandler?.handleResult(rawResult)
@@ -228,101 +226,46 @@ class ScannerView : FrameLayout {
     }
 
 
-    class ZXingBarcodeAnalyzer(private val listener: ResultHandler) : ImageAnalysis.Analyzer {
-        private var multiFormatReader: MultiFormatReader = MultiFormatReader().apply {
-            setHints(mapOf(DecodeHintType.ALSO_INVERTED to true))
-        }
+    class MLKitBarcodeAnalyzer(private val listener: ResultHandler) : ImageAnalysis.Analyzer {
+        private val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+        private val scanner: BarcodeScanner = BarcodeScanning.getClient(options)
         private var isScanning = AtomicBoolean(false)
 
-        override fun analyze(image: ImageProxy) {
+        @SuppressLint("UnsafeOptInUsageError")
+        override fun analyze(imageProxy: ImageProxy) {
             if (isScanning.get()) {
-                image.close()
+                imageProxy.close()
                 return
             }
 
-            isScanning.set(true)
+            val mediaImage = imageProxy.image
+            if (mediaImage != null) {
+                isScanning.set(true)
+                val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
-            if ((image.format == ImageFormat.YUV_420_888 || image.format == ImageFormat.YUV_422_888 || image.format == ImageFormat.YUV_444_888) && image.planes.size == 3) {
-                val luminancePlane = image.planes[0]
-                val rotatedImage = RotatedImage(
-                    getPixelData(image.width, image.height, luminancePlane),
-                    image.width,
-                    image.height
-                )
-                rotateImageArray(rotatedImage, image.imageInfo.rotationDegrees)
-
-                val planarYUVLuminanceSource = PlanarYUVLuminanceSource(
-                    rotatedImage.byteArray,
-                    rotatedImage.width,
-                    rotatedImage.height,
-                    0, 0,
-                    rotatedImage.width,
-                    rotatedImage.height,
-                    false
-                )
-                val hybridBinarizer = HybridBinarizer(planarYUVLuminanceSource)
-                val binaryBitmap = BinaryBitmap(hybridBinarizer)
-                try {
-                    val rawResult = multiFormatReader.decodeWithState(binaryBitmap)
-                    listener.handleResult(Result(rawResult.text, rawResult.rawBytes))
-                } catch (e: NotFoundException) {
-                    // ignore, no barcode found
-                } catch (e: ArrayIndexOutOfBoundsException) {
-                    // ignore, this is something zxing seems to do if it does not like the barcode
-                } finally {
-                    multiFormatReader.reset()
-                    image.close()
-                }
-
-                isScanning.set(false)
-            }
-        }
-
-        private fun rotateImageArray(image: RotatedImage, degrees: Int) {
-            val rotationCount = degrees / 90
-            if (rotationCount == 1 || rotationCount == 3) {
-                for (i in 0 until rotationCount) {
-                    val rotatedData = ByteArray(image.width * image.height)
-                    for (y in 0 until image.height) {
-                        for (x in 0 until image.width) {
-                            rotatedData[x * image.height + image.height - y - 1] =
-                                image.byteArray[x + y * image.width]
+                scanner.process(image)
+                    .addOnSuccessListener { barcodes ->
+                        for (barcode in barcodes) {
+                            val rawValue = barcode.rawValue
+                            if (rawValue != null) {
+                                listener.handleResult(Result(rawValue, barcode.rawBytes))
+                                // Once we find a result, we can stop for this image
+                                break
+                            }
                         }
                     }
-                    image.byteArray = rotatedData
-                    val tmp = image.width
-                    image.width = image.height
-                    image.height = tmp
-                }
+                    .addOnFailureListener {
+                        // ignore
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                        isScanning.set(false)
+                    }
+            } else {
+                imageProxy.close()
             }
         }
-
-        private fun byteBufferToByteArray(buf: ByteBuffer): ByteArray {
-            val ba = ByteArray(buf.remaining())
-            buf.get(ba)
-            buf.rewind()
-            return ba
-        }
-
-        private fun getPixelData(width: Int, height: Int, plane: PlaneProxy): ByteArray {
-            // On some devices, the data from camerax has a plane.pixelStride > 1 that is not handled by zxing
-            val rawData = byteBufferToByteArray(plane.buffer)
-            if (plane.pixelStride == 1 && plane.pixelStride == width) {
-                return rawData
-            }
-            val rowOffset = plane.rowStride
-            val nextPixelOffset = plane.pixelStride
-
-            val cleanData = ByteArray(width * height)
-            for (y in 0 until height) {
-                for (x in 0 until width) {
-                    cleanData[y * width + x] = rawData[y * rowOffset + x * nextPixelOffset]
-                }
-            }
-            return cleanData
-        }
-
-
-        private class RotatedImage(var byteArray: ByteArray, var width: Int, var height: Int)
     }
 }
