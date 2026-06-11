@@ -47,7 +47,7 @@ import java.util.*
 fun addQuestionsError(ctx: Context, f: Any?, label: TextView?, strid: Int) {
     if (f is EditText) {
         f.error = if (strid == 0) null else ctx.getString(strid)
-    } else if (f is MutableList<*> && f[0] is EditText) {
+    } else if (f is MutableList<*> && f.isNotEmpty() && f[0] is EditText) {
         (f as List<EditText>).get(1).error = if (strid == 0) null else ctx.getString(strid)
     } else if (label != null) {
         label.error = if (strid == 0) null else ctx.getString(strid)
@@ -241,7 +241,7 @@ class QuestionsDialog(
                 question.question
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tv.setTextAppearance(R.style.TextAppearance_AppCompat_Medium)
+                tv.setTextAppearance(androidx.appcompat.R.style.TextAppearance_AppCompat_Medium)
             }
             tv.setPadding(0, 16, 0, 4)
             llFormFields.addView(tv)
@@ -676,7 +676,7 @@ class QuestionsDialog(
             warningTv.text = ""
             warningTv.visibility = View.GONE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                warningTv.setTextAppearance(R.style.TextAppearance_AppCompat_Small)
+                warningTv.setTextAppearance(androidx.appcompat.R.style.TextAppearance_AppCompat_Small)
             }
             warningTv.setTextColor(ContextCompat.getColor(ctx, R.color.pretix_brand_orange))
             warningTv.setTypeface(null, Typeface.ITALIC)

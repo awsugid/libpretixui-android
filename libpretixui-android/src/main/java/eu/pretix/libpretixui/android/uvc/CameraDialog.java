@@ -19,10 +19,6 @@ package eu.pretix.libpretixui.android.uvc;
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
- *  All files in the folder are under this Apache License, Version 2.0.
- *  Files in the libjpeg-turbo, libusb, libuvc, rapidjson folder
- *  may have a different license, see the respective files.
  */
 
 
@@ -126,7 +122,7 @@ public class CameraDialog extends DialogFragment {
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(initView());
-        builder.setTitle(R.string.select);
+        builder.setTitle(R.string.camera_usb);
         builder.setPositiveButton(android.R.string.ok, mOnDialogClickListener);
         builder.setNegativeButton(android.R.string.cancel, mOnDialogClickListener);
         builder.setNeutralButton(R.string.refresh, null);

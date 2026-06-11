@@ -13,6 +13,9 @@
     <string name="camera_back">Kamera auf der Rückseite</string>
     <string name="camera_front">Kamera auf der Frontseite</string>
     <string name="camera_usb">USB-Kamera auswählen</string>
+    <string name="refresh">Neu laden</string>
+    <string name="camera">Kamera</string>
+    <string name="camera_no_device">Keine USB-Kamera gefunden</string>
     <string name="datetime_format">%1$td.%1$tm.%1$tY %1$tH:%1$tM</string>
     <string name="date_format">%1$td.%1$tm.%1$tY</string>
     <string name="time_format">%1$tH:%1$tM</string>
@@ -37,4 +40,7 @@
     <string name="setup_hint_url">URL</string>
     <string name="setup_progress">Initialisiere Gerät…</string>
     <string name="setup_tutorial">Um loszulegen, erstellen Sie ein neues Gerät im Abschnitt \"Geräte\" ihres Veranstalter-Kontos im pretix-Backend. Sie erhalten dann einen QR-Code zur Konfiguration, den Sie hier scannen können.</string>
+    <string name="foreground_service_dialog_title">Service läuft im Vordergrund</string>
+    <string name="foreground_service_dialog_text">Wenn Sie diese Funktion aktivieren, wird %1$s einen Vordergrund-Dienest starten um eine unerwünschte Trennung vom verbundenen Gerät zu verhindern. Sie erkennen den Dienst anhand einer dauerhaften Benachrichtigung. Während der Service läuft, kann die Akkunutzung erhöht sein. Sie können den Dienst über die Benachrichtigung stoppen.</string>
+    <string name="foreground_service_stop">Dienst stoppen</string>
 </resources>
