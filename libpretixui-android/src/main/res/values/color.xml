@@ -1,4 +1,5 @@
 <resources>
+    <color name="black">#000000</color>
     <color name="pretix_brand_dark">#281333</color>
     <color name="pretix_brand_light">#3B1C4A</color>
     <color name="pretix_brand_green">#5CB85C</color>
@@ -6,4 +7,5 @@
     <color name="pretix_brand_orange">#FFB419</color>
     <color name="pretix_brand_blue">#5F9CD4</color>
     <color name="pretix_brand_lightgrey">#cccccc</color>
+    <color name="text_color">#8a000000</color>
 </resources>

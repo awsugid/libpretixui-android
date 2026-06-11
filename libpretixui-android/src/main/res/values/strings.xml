@@ -12,6 +12,9 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_usb">Select USB camera</string>
+    <string name="refresh">Refresh</string>
+    <string name="camera">Camera</string>
+    <string name="camera_no_device">No USB camera found</string>
     <string name="datetime_format">%1$tY-%1$tm-%1$td %1$tH:%1$tM</string>
     <string name="date_format">%1$tY-%1$tm-%1$td</string>
     <string name="time_format">%1$tH:%1$tM</string>
@@ -37,4 +40,7 @@
     <string name="setup_hint_url">URL</string>
     <string name="setup_hint_token">Token</string>
     <string name="action_manual">Manual setup</string>
+    <string name="foreground_service_dialog_title">Service will run in foreground</string>
+    <string name="foreground_service_dialog_text">If you enable this feature, to avoid disconnections from your connected device, %1$s will start a foreground service. You will see an ongoing notification about the service. Battery usage might be increased while the service is running. You can stop the service through the notification.</string>
+    <string name="foreground_service_stop">Stop service</string>
 </resources>
